@@ -17,24 +17,39 @@ pyFilePath = ""
 pythonPath = ""
 batPath = ""
 icoPath = ""
+isLoading = False
+
+
+def loading():
+    while True:
+        label_loading.config(text='loading.  ')
+        time.sleep(0.5)
+        label_loading.config(text='loading.. ')
+        time.sleep(0.5)
+        label_loading.config(text='loading...')
+        time.sleep(0.5)
 
 
 def createFile():
     global batPath
+    global isLoading
     if len(entry_py.get()) != 0 and len(entry_path.get()) != 0 and len(entry_python.get()) != 0 and var2.get() == 0:
         if batPath[len(batPath) - 1] != '\\':
             batPath += '\\'
         if var1.get() == 0 and var2.get() == 0:
+            label_loading.place(relx=0.4, rely=0.35, relwidth=0.2, relheight=0.2)
             file = open(batPath + "start.bat", "w")
             if var.get():
                 file.write("echo off\n")
             file.write('"' + pythonPath + '" "' + pyFilePath + '"\n@pause')  # заполнение файла
             print("bat файл успешно создан")
+            label_loading.place_forget()
             messagebox.showinfo("success", "Конвертация завершена")
             file.close()
         elif var1.get() == 1:
             batPath1 = batPath + "BanO4ka\\"
             try:
+                label_loading.place(relx=0.4, rely=0.35, relwidth=0.2, relheight=0.2)
                 os.mkdir(batPath1)
                 file = open(batPath1 + "start.bat", "w")
                 if var.get():
@@ -45,6 +60,7 @@ def createFile():
                 file1.write(
                     'Set shell = WScript.CreateObject("WScript.Shell")\nshell.Run("' + batPath + 'start.bat"), 0 , True')
                 file1.close()
+                label_loading.place_forget()
                 messagebox.showinfo("success", "Конвертация завершена")
                 print('convert success')
             except Exception as e:
@@ -52,6 +68,7 @@ def createFile():
     elif var2.get() and len(entry_py.get()) != 0 and len(entry_path.get()) != 0:
         temp = pyFilePath.split("/")
         name = temp[len(temp) - 1]
+        label_loading.place(relx=0.4, rely=0.35, relwidth=0.2, relheight=0.2)
         if var3.get() == 0:
             file2 = open(batPath + "install.bat", "w")  # установщик pyinstaller'a
             file2.write('pip install pyinstaller')
@@ -59,7 +76,6 @@ def createFile():
             os.startfile(batPath + 'install.bat')
             print('sleep')
             time.sleep(50)  # ожидание установки
-            messagebox.showinfo("success", "Конвертация завершена")
             print('install success')
             os.remove(batPath + "install.bat")
         file3 = open(batPath + "convert.bat", "w")  # конвертация
@@ -74,15 +90,18 @@ def createFile():
         temp = name.split(".")
         name = "/" + temp[0] + ".spec"
         os.remove(batPath + name)
+        label_loading.place_forget()
         messagebox.showinfo("success", "Конвертация завершена")
         print('convert success')
     else:
         messagebox.showerror("Ошибка ввода", "Ну ты как бы заполни поля")
 
 
-def multiThearding():
+def multiThreading():
     t = threading.Thread(target=createFile, name='Theard1')
     t.start()
+    load = threading.Thread(target=loading, name='Thread2')
+    load.start()
 
 
 def fillPath(entry, content):
@@ -182,12 +201,16 @@ entry_ico.delete(0, tk.END)
 entry_ico.insert(0, "опционально(пока не работает)")
 entry_ico.configure(state="disabled")
 
-convert = tk.Button(root, text="конвертировать", bg='#2E8B57', command=lambda: multiThearding())
+convert = tk.Button(root, text="конвертировать", bg='#2E8B57', command=lambda: multiThreading())
 convert.place(relx=0.1, rely=0.65, relwidth=0.80, relheight=0.08)
 
-label_author = tk.Label(root, font=12, text="Если что-то не получается, то я не виноват, что ты даунич ))))0))",
-                        fg='black')
-label_author.place(relx=0.1, rely=0.82, relwidth=0.80, relheight=0.1)
+label_1 = tk.Label(root, font=12, text="Если что-то не получается, то я не виноват, что ты даунич ))))0))",
+                   fg='black')
+label_1.place(relx=0.1, rely=0.82, relwidth=0.80, relheight=0.1)
+
+label_loading = tk.Label(root, text="", bg='white', fg='black', font=18)
+label_loading.place(relx=0.4, rely=0.35, relwidth=0.2, relheight=0.2)
+label_loading.place_forget()
 
 if __name__ == "__main__":
     root.title("BanO4ka v228.666.1337")
