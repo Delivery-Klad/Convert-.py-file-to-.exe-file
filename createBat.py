@@ -1,6 +1,7 @@
 import os
 import time
 import shutil
+import psutil
 import threading
 import tkinter as tk
 from tkinter import *
@@ -18,37 +19,71 @@ pythonPath = ""
 batPath = ""
 icoPath = ""
 isLoading = False
+contain = False
 
 
 def loading():
     while True:
-        label_loading.config(text='loading.  ')
+        place()
+        forget()
+
+
+def place():
+    if isLoading:
+        print(isLoading)
+        point1.place(relx=0.55, rely=0.40, relwidth=0.005, relheight=0.041)
         time.sleep(0.5)
-        label_loading.config(text='loading.. ')
+        point2.place(relx=0.5595, rely=0.42, relwidth=0.005, relheight=0.015)
         time.sleep(0.5)
-        label_loading.config(text='loading...')
+        point3.place(relx=0.562, rely=0.441, relwidth=0.005, relheight=0.014)
         time.sleep(0.5)
+        point4.place(relx=0.5595, rely=0.462, relwidth=0.005, relheight=0.015)
+        time.sleep(0.5)
+        point5.place(relx=0.55, rely=0.4755, relwidth=0.005, relheight=0.01)
+        time.sleep(0.5)
+        point6.place(relx=0.5405, rely=0.462, relwidth=0.005, relheight=0.015)
+        time.sleep(0.5)
+        point7.place(relx=0.538, rely=0.441, relwidth=0.005, relheight=0.014)
+        time.sleep(0.5)
+        point8.place(relx=0.5405, rely=0.42, relwidth=0.005, relheight=0.015)
+        time.sleep(0.5)
+
+
+def forget():
+    point1.place_forget()
+    point2.place_forget()
+    point3.place_forget()
+    point4.place_forget()
+    point5.place_forget()
+    point6.place_forget()
+    point7.place_forget()
+    point8.place_forget()
 
 
 def createFile():
     global batPath
+    global contain
     global isLoading
     if len(entry_py.get()) != 0 and len(entry_path.get()) != 0 and len(entry_python.get()) != 0 and var2.get() == 0:
         if batPath[len(batPath) - 1] != '\\':
             batPath += '\\'
         if var1.get() == 0 and var2.get() == 0:
+            isLoading = True
             label_loading.place(relx=0.4, rely=0.35, relwidth=0.2, relheight=0.2)
             file = open(batPath + "start.bat", "w")
             if var.get():
                 file.write("echo off\n")
             file.write('"' + pythonPath + '" "' + pyFilePath + '"\n@pause')  # заполнение файла
             print("bat файл успешно создан")
+            forget()
+            isLoading = False
             label_loading.place_forget()
             messagebox.showinfo("success", "Конвертация завершена")
             file.close()
         elif var1.get() == 1:
             batPath1 = batPath + "BanO4ka\\"
             try:
+                isLoading = True
                 label_loading.place(relx=0.4, rely=0.35, relwidth=0.2, relheight=0.2)
                 os.mkdir(batPath1)
                 file = open(batPath1 + "start.bat", "w")
@@ -60,7 +95,10 @@ def createFile():
                 file1.write(
                     'Set shell = WScript.CreateObject("WScript.Shell")\nshell.Run("' + batPath + 'start.bat"), 0 , True')
                 file1.close()
+                isLoading = False
+                forget()
                 label_loading.place_forget()
+                forget()
                 messagebox.showinfo("success", "Конвертация завершена")
                 print('convert success')
             except Exception as e:
@@ -68,6 +106,7 @@ def createFile():
     elif var2.get() and len(entry_py.get()) != 0 and len(entry_path.get()) != 0:
         temp = pyFilePath.split("/")
         name = temp[len(temp) - 1]
+        isLoading = True
         label_loading.place(relx=0.4, rely=0.35, relwidth=0.2, relheight=0.2)
         if var3.get() == 0:
             file2 = open(batPath + "install.bat", "w")  # установщик pyinstaller'a
@@ -75,8 +114,15 @@ def createFile():
             file2.close()
             os.startfile(batPath + 'install.bat')
             print('sleep')
-            time.sleep(50)  # ожидание установки
-            print('install success')
+            # time.sleep(50)  # ожидание установки
+            while contain:
+                for proc in psutil.process_iter():
+                    contain = False
+                    name = proc.name()
+                    if name == "cmd.exe":
+                        contain = True
+                        break
+            print('Install success')
             os.remove(batPath + "install.bat")
         file3 = open(batPath + "convert.bat", "w")  # конвертация
         file3.write('cd ' + batPath + '\npyinstaller -F ' + name)
@@ -90,9 +136,12 @@ def createFile():
         temp = name.split(".")
         name = "/" + temp[0] + ".spec"
         os.remove(batPath + name)
+        isLoading = False
+        forget()
         label_loading.place_forget()
+        forget()
         messagebox.showinfo("success", "Конвертация завершена")
-        print('convert success')
+        print('Convert success!')
     else:
         messagebox.showerror("Ошибка ввода", "Ну ты как бы заполни поля")
 
@@ -118,21 +167,21 @@ def pyPath():
     global pyFilePath
     pyFilePath = filedialog.askopenfilename(filetypes=(("Python File", "*.py"), ("All files", "*.*")))
     pyFilePath = fillPath(entry_py, pyFilePath)
-    print(pyFilePath)
+    print('Путь к .py файлу: ' + pyFilePath)
 
 
 def pytPath():
     global pythonPath
     pythonPath = filedialog.askopenfilename(filetypes=(("Приложение", "*.exe"), ("All files", "*.*")))
     pythonPath = fillPath(entry_python, pythonPath)
-    print(pythonPath)
+    print('Путь к python.exe файлу: ' + pythonPath)
 
 
 def path():
     global batPath
     batPath = filedialog.askdirectory()
     batPath = fillPath(entry_path, batPath)
-    print(batPath)
+    print('Путь для создания файла: ' + batPath)
 
 
 def ico_Path():
@@ -208,9 +257,18 @@ label_1 = tk.Label(root, font=12, text="Если что-то не получае
                    fg='black')
 label_1.place(relx=0.1, rely=0.82, relwidth=0.80, relheight=0.1)
 
-label_loading = tk.Label(root, text="", bg='white', fg='black', font=18)
+label_loading = tk.Label(root, text="loading", bg='white', fg='black', font=18)
 label_loading.place(relx=0.4, rely=0.35, relwidth=0.2, relheight=0.2)
 label_loading.place_forget()
+
+point1 = tk.Label(root, text="•", bg='white', fg='black', font=30)
+point2 = tk.Label(root, text="•", bg='white', fg='black', font=30)
+point3 = tk.Label(root, text="•", bg='white', fg='black', font=30)
+point4 = tk.Label(root, text="•", bg='white', fg='black', font=30)
+point5 = tk.Label(root, text="•", bg='white', fg='black', font=30)
+point6 = tk.Label(root, text="•", bg='white', fg='black', font=30)
+point7 = tk.Label(root, text="•", bg='white', fg='black', font=30)
+point8 = tk.Label(root, text="•", bg='white', fg='black', font=30)
 
 if __name__ == "__main__":
     root.title("BanO4ka v228.666.1337")
