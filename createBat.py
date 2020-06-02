@@ -37,7 +37,6 @@ def createFile():
         if var3.get() == 0:
             system("pip install pyinstaller")
             print('Install success')
-        system('cd ' + pyFilePath)
         if var4.get() == 1 and len(entry_ico.get()) != 0:
             if var2.get() == 1:
                 system('pyinstaller -w -F -i "{0}" {1}'.format(icoPath, name))
@@ -48,12 +47,12 @@ def createFile():
         temp = name.split(".")
         nameOfFile = len(name)
 
-        shutil.rmtree(pyFilePath[:-nameOfFile] + "/build")
-        shutil.rmtree(pyFilePath[:-nameOfFile] + "/__pycache__")
-        name = "/" + temp[0] + ".spec"
-        os.remove(pyFilePath[:-nameOfFile] + name)
-        shutil.move(pyFilePath[:-nameOfFile] + '/dist' + name[:-4] + 'exe', batPath)
-        shutil.rmtree(pyFilePath[:-nameOfFile] + "/dist")
+        shutil.rmtree("build")
+        shutil.rmtree("__pycache__")
+        name = temp[0] + ".spec"
+        os.remove(name)
+        shutil.move('dist/' + name[:-4] + 'exe', batPath)
+        shutil.rmtree('dist')
         isLoading = False
         label_loading.place_forget()
         messagebox.showinfo("success", "Конвертация завершена")
