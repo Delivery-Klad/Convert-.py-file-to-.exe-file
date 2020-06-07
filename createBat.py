@@ -39,24 +39,21 @@ def createFile():
             print('Install success')
         if var4.get() == 1 and len(entry_ico.get()) != 0:
             if var2.get() == 1:
-                system('pyinstaller -w -F -i "{0}" {1}'.format(icoPath, name))
+                system('pyinstaller -w -F -i "{0}" {1}'.format(icoPath, pyFilePath))
             else:
-                system('pyinstaller -F -i "{0}" {1}'.format(icoPath, name))
+                system('pyinstaller -F -i "{0}" {1}'.format(icoPath, pyFilePath))
         else:
-            system('pyinstaller -F ' + name)
+            system('pyinstaller -F ' + pyFilePath)
         temp = name.split(".")
-        nameOfFile = len(name)
-
-        shutil.rmtree("build")
-        shutil.rmtree("__pycache__")
+        nameOfFile = name
         name = temp[0] + ".spec"
-        os.remove(name)
-        shutil.move('dist/' + name[:-4] + 'exe', batPath)
-        shutil.rmtree('dist')
+
+        removeTempFiles(nameOfFile, name, batPath)
         isLoading = False
         label_loading.place_forget()
         messagebox.showinfo("success", "Конвертация завершена")
         print('Convert success!')
+        resetEntries()
     else:
         messagebox.showerror("Ошибка ввода", "Ну ты как бы заполни поля")
 
@@ -66,35 +63,64 @@ def multiThreading():
     t.start()
 
 
+def removeTempFiles(nameOfFile, name, batPath):
+    shutil.rmtree("build")
+    shutil.rmtree(pyFilePath[:-len(nameOfFile)] + "__pycache__")
+    os.remove(name)
+    shutil.move('dist/' + name[:-4] + 'exe', batPath)
+    shutil.rmtree('dist')
+
+
+def resetEntries():
+    try:
+        fillPath(entry_py, '')
+        fillPath(entry_path, '')
+        fillPath(entry_ico, '')
+    except Exception as e:
+        print(e)
+
+
 def fillPath(entry, content):
-    entry.configure(state="normal")
-    entry.delete(0, tk.END)
-    entry.insert(0, str(content))
-    entry.configure(state="disabled")
-    content = entry.get()
-    content = content.replace('\\', '/')
-    return content
+    try:
+        entry.configure(state="normal")
+        entry.delete(0, tk.END)
+        entry.insert(0, str(content))
+        entry.configure(state="disabled")
+        content = entry.get()
+        content = content.replace('\\', '/')
+        return content
+    except Exception as e:
+        print(e)
 
 
 def pyPath():
-    global pyFilePath
-    pyFilePath = filedialog.askopenfilename(filetypes=(("Python File", "*.py"), ("All files", "*.*")))
-    pyFilePath = fillPath(entry_py, pyFilePath)
-    print('Путь к .py файлу: ' + pyFilePath)
+    try:
+        global pyFilePath
+        pyFilePath = filedialog.askopenfilename(filetypes=(("Python File", "*.py"), ("All files", "*.*")))
+        pyFilePath = fillPath(entry_py, pyFilePath)
+        print('Путь к .py файлу: ' + pyFilePath)
+    except Exception as e:
+        print(e)
 
 
 def path():
-    global batPath
-    batPath = filedialog.askdirectory()
-    batPath = fillPath(entry_path, batPath)
-    print('Путь для создания файла: ' + batPath)
+    try:
+        global batPath
+        batPath = filedialog.askdirectory()
+        batPath = fillPath(entry_path, batPath)
+        print('Путь для создания файла: ' + batPath)
+    except Exception as e:
+        print(e)
 
 
 def ico_Path():
-    global icoPath
-    icoPath = filedialog.askopenfilename(filetypes=(("ярлык", "*.ico"), ("All files", "*.*")))
-    icoPath = fillPath(entry_ico, icoPath)
-    print(icoPath)
+    try:
+        global icoPath
+        icoPath = filedialog.askopenfilename(filetypes=(("ярлык", "*.ico"), ("All files", "*.*")))
+        icoPath = fillPath(entry_ico, icoPath)
+        print(icoPath)
+    except Exception as e:
+        print(e)
 
 
 check_frame = LabelFrame(root, width=990, height=50, relief=FLAT)
@@ -151,7 +177,7 @@ entry_ico.pack(side=RIGHT, padx=5)
 PS_frame = LabelFrame(root, width=990, height=50, relief=FLAT)
 PS_frame.pack()
 
-convert = tk.Button(PS_frame, text="конвертировать", bg='#2E8B57', width=95, command=lambda: multiThreading())
+convert = tk.Button(PS_frame, text="конвертировать", bg='#2E8B57', width=110, command=lambda: multiThreading())
 convert.pack()
 
 label_1 = tk.Label(PS_frame, font=5, text="Если что-то не получается, то я не виноват, что ты даунич ))))0))",
@@ -168,6 +194,6 @@ h = root.winfo_screenheight() // 2 - 150
 
 if __name__ == "__main__":
     root.title("BanO4ka v666.228.1337")
-    root.geometry("1000x220+{}+{}".format(w, h))
+    root.geometry("1050x220+{}+{}".format(w, h))
     root.resizable(False, False)
     root.mainloop()
