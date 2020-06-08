@@ -28,7 +28,7 @@ def create_exe():
 
     if len(entry_py.get()) != 0 and len(entry_path.get()) != 0:
         check_py = entry_py.get().split('.')
-        if check_py[len(check_py) - 1] == 'py':
+        if check_py[len(check_py) - 1] != 'py':
             messagebox.showerror("Неверный формат", ".py файл не выбран")
             fill_path(entry_py, '')
             end_loading()
