@@ -1,7 +1,5 @@
 import os
-import time
 import shutil
-import psutil
 import threading
 from os import system
 import tkinter as tk
@@ -24,63 +22,82 @@ var2.set(1)
 var3.set(1)
 
 
-def createFile():
+def create_exe():
     global batPath
     global contain
-    global isLoading
 
     if len(entry_py.get()) != 0 and len(entry_path.get()) != 0:
+        check_py = entry_py.get().split('.')
+        if check_py[len(check_py) - 1] == 'py':
+            messagebox.showerror("Неверный формат", ".py файл не выбран")
+            fill_path(entry_py, '')
+            end_loading()
+            return
+
         temp = pyFilePath.split("/")
         name = temp[len(temp) - 1]
-        isLoading = True
         label_loading.place(relx=0.4, rely=0.35, relwidth=0.2, relheight=0.2)
         if var3.get() == 0:
-            system("pip install pyinstaller")
-            print('Install success')
-        if var4.get() == 1 and len(entry_ico.get()) != 0:
-            if var2.get() == 1:
-                system('pyinstaller -w -F -i "{0}" {1}'.format(icoPath, pyFilePath))
+            try:
+                system("pip install pyinstaller")
+                print('Install success')
+            except Exception as e:
+                messagebox.showerror("Ошибка установки", "pip не добавлен в path")
+                end_loading()
+                print(e)
+        try:
+            if var4.get() == 1 and len(entry_ico.get()) != 0:
+                if var2.get() == 1:
+                    system('pyinstaller -w -F -i "{0}" {1}'.format(icoPath, pyFilePath))
+                else:
+                    system('pyinstaller -F -i "{0}" {1}'.format(icoPath, pyFilePath))
             else:
-                system('pyinstaller -F -i "{0}" {1}'.format(icoPath, pyFilePath))
-        else:
-            system('pyinstaller -F ' + pyFilePath)
+                system('pyinstaller -F ' + pyFilePath)
+        except Exception as e:
+            messagebox.showerror("Ошибка конвертации", "Не установлены необходимые бибилотеки")
+            end_loading()
+            print(e)
+
         temp = name.split(".")
-        nameOfFile = name
+        file_name = name
         name = temp[0] + ".spec"
 
-        removeTempFiles(nameOfFile, name, batPath)
-        isLoading = False
-        label_loading.place_forget()
+        remove_temp_files(file_name, name, batPath)
+        end_loading()
         messagebox.showinfo("success", "Конвертация завершена")
         print('Convert success!')
-        resetEntries()
+        reset_entries()
     else:
         messagebox.showerror("Ошибка ввода", "Ну ты как бы заполни поля")
 
 
-def multiThreading():
-    t = threading.Thread(target=createFile, name='Theard1')
+def multi_threading():
+    t = threading.Thread(target=create_exe, name='Theard1')
     t.start()
 
 
-def removeTempFiles(nameOfFile, name, batPath):
+def end_loading():
+    label_loading.place_forget()
+
+
+def remove_temp_files(file_name, name, _path):
     shutil.rmtree("build")
-    shutil.rmtree(pyFilePath[:-len(nameOfFile)] + "__pycache__")
+    shutil.rmtree(pyFilePath[:-len(file_name)] + "__pycache__")
     os.remove(name)
-    shutil.move('dist/' + name[:-4] + 'exe', batPath)
+    shutil.move('dist/' + name[:-4] + 'exe', _path)
     shutil.rmtree('dist')
 
 
-def resetEntries():
+def reset_entries():
     try:
-        fillPath(entry_py, '')
-        fillPath(entry_path, '')
-        fillPath(entry_ico, '')
+        fill_path(entry_py, '')
+        fill_path(entry_path, '')
+        fill_path(entry_ico, '')
     except Exception as e:
         print(e)
 
 
-def fillPath(entry, content):
+def fill_path(entry, content):
     try:
         entry.configure(state="normal")
         entry.delete(0, tk.END)
@@ -93,11 +110,11 @@ def fillPath(entry, content):
         print(e)
 
 
-def pyPath():
+def py_path():
     try:
         global pyFilePath
         pyFilePath = filedialog.askopenfilename(filetypes=(("Python File", "*.py"), ("All files", "*.*")))
-        pyFilePath = fillPath(entry_py, pyFilePath)
+        pyFilePath = fill_path(entry_py, pyFilePath)
         print('Путь к .py файлу: ' + pyFilePath)
     except Exception as e:
         print(e)
@@ -107,17 +124,17 @@ def path():
     try:
         global batPath
         batPath = filedialog.askdirectory()
-        batPath = fillPath(entry_path, batPath)
+        batPath = fill_path(entry_path, batPath)
         print('Путь для создания файла: ' + batPath)
     except Exception as e:
         print(e)
 
 
-def ico_Path():
+def ico_path():
     try:
         global icoPath
         icoPath = filedialog.askopenfilename(filetypes=(("ярлык", "*.ico"), ("All files", "*.*")))
-        icoPath = fillPath(entry_ico, icoPath)
+        icoPath = fill_path(entry_ico, icoPath)
         print(icoPath)
     except Exception as e:
         print(e)
@@ -144,7 +161,7 @@ l1_frame.pack(pady=5)
 label_py = tk.Label(l1_frame, font=12, text="Путь к .py файлу:     ", fg='black', width=15)
 label_py.pack(side=LEFT, padx=5)
 
-button_py = tk.Button(l1_frame, text="Обзор", bg='#2E8B57', width=20, command=lambda: pyPath())
+button_py = tk.Button(l1_frame, text="Обзор", bg='#2E8B57', width=20, command=lambda: py_path())
 button_py.pack(side=RIGHT, padx=5)
 
 entry_py = tk.Entry(l1_frame, font=12, width=75, state="disabled")
@@ -168,7 +185,7 @@ l3_frame.pack(pady=5)
 label_ico = tk.Label(l3_frame, font=12, text="Путь к иконке:         ", fg='black', width=15)
 label_ico.pack(side=LEFT, padx=5)
 
-button_ico = Button(l3_frame, text="Обзор", bg='#2E8B57', width=20, command=lambda: ico_Path())
+button_ico = Button(l3_frame, text="Обзор", bg='#2E8B57', width=20, command=lambda: ico_path())
 button_ico.pack(side=RIGHT, padx=5)
 
 entry_ico = tk.Entry(l3_frame, font=12, width=75, state="disabled")
@@ -177,7 +194,7 @@ entry_ico.pack(side=RIGHT, padx=5)
 PS_frame = LabelFrame(root, width=990, height=50, relief=FLAT)
 PS_frame.pack()
 
-convert = tk.Button(PS_frame, text="конвертировать", bg='#2E8B57', width=110, command=lambda: multiThreading())
+convert = tk.Button(PS_frame, text="конвертировать", bg='#2E8B57', width=110, command=lambda: multi_threading())
 convert.pack()
 
 label_1 = tk.Label(PS_frame, font=5, text="Если что-то не получается, то я не виноват, что ты даунич ))))0))",
