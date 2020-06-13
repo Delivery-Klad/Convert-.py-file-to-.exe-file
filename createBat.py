@@ -52,7 +52,10 @@ def create_exe():
                 else:
                     system('pyinstaller -F -i "{0}" {1}'.format(icoPath, pyFilePath))
             else:
-                system('pyinstaller -F ' + pyFilePath)
+                if var2.get() == 1:
+                    system('pyinstaller -w -F ' + pyFilePath)
+                else:
+                    system('pyinstaller -F ' + pyFilePath)
         except Exception as e:
             messagebox.showerror("Ошибка конвертации", "Не установлены необходимые бибилотеки")
             end_loading()
@@ -64,15 +67,16 @@ def create_exe():
 
         remove_temp_files(file_name, name, batPath)
         end_loading()
-        messagebox.showinfo("success", "Конвертация завершена")
+        os.system('cls' if os.name == 'nt' else 'clear')
         print('Convert success!')
+        messagebox.showinfo("success", "Конвертация завершена")
         reset_entries()
     else:
         messagebox.showerror("Ошибка ввода", "Ну ты как бы заполни поля")
 
 
 def multi_threading():
-    t = threading.Thread(target=create_exe, name='Theard1')
+    t = threading.Thread(target=create_exe, name='Thread1')
     t.start()
 
 

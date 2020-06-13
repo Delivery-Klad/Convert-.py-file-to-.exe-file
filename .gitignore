@@ -1,2 +1,5 @@
 /ven/
+/venv/
 /.idea/
+/dist/
+/build/
